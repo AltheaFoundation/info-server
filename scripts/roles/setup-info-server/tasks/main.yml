@@ -2,7 +2,7 @@
 
 - name: Stop info-server
   systemd:
-    name: gravity-info-server
+    name: althea-info-server
     state: stopped
   become: true
   # just in case we haven't deployed the service yet
@@ -10,8 +10,8 @@
 
 - name: Copy binary
   copy:
-    src: "{{playbook_dir}}/gravity-info-server"
-    dest: /usr/bin/gravity-info-server
+    src: "{{playbook_dir}}/althea-info-server"
+    dest: /usr/bin/althea-info-server
     mode: 0755
   become: true
 

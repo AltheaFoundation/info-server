@@ -2,19 +2,19 @@
 set -eux
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-pushd $DIR/../gravity-info-server
+pushd $DIR/../althea-info-server
 set +e
-rm ../scripts/gravity-info-server
+rm ../scripts/althea-info-server
 set -e
 cargo build --release
-cp target/release/gravity-info-server ../scripts
+cp target/release/althea-info-server ../scripts
 popd
 
-pushd $DIR/../gravity-info-dash
+pushd $DIR/../althea-info-dash
 yarn run build
-rm -rf ../scripts/gravity-info-dash/
-mkdir ../scripts/gravity-info-dash
-cp -r build/* ../scripts/gravity-info-dash
+rm -rf ../scripts/althea-info-dash/
+mkdir ../scripts/althea-info-dash
+cp -r build/* ../scripts/althea-info-dash
 popd
 
 pushd $DIR

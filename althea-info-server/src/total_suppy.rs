@@ -4,7 +4,6 @@
 //! to effectively query all the data in a reasonable amount of time and compute the result locally
 //! This code provides a generic way to compute the total liquid supply for a cosmos chain across all vesting types
 
-use crate::gravity_info::{GRAVITY_NODE_GRPC, GRAVITY_PREFIX, REQUEST_TIMEOUT};
 use actix_web::rt::System;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::query_client::QueryClient as BankQueryClient;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::QueryBalanceRequest;
@@ -26,9 +25,11 @@ use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tonic::transport::channel::Channel;
 
+use crate::{ALTHEA_NODE_GRPC, ALTHEA_PREFIX, REQUEST_TIMEOUT};
+
 // update once a day
 const LOOP_TIME: Duration = Duration::from_secs(86400);
-pub const GRAVITY_DENOM: &str = "ugraviton";
+pub const ALTHEA_DENOM: &str = "aalthea";
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ChainTotalSupplyNumbers {
@@ -73,8 +74,8 @@ pub fn chain_total_supply_thread() {
     thread::spawn(move || loop {
         let runner = System::new();
         runner.block_on(async move {
-            let contact = Contact::new(GRAVITY_NODE_GRPC, REQUEST_TIMEOUT, GRAVITY_PREFIX).unwrap();
-            match compute_liquid_supply(&contact, GRAVITY_DENOM.to_string()).await {
+            let contact = Contact::new(ALTHEA_NODE_GRPC, REQUEST_TIMEOUT, ALTHEA_PREFIX).unwrap();
+            match compute_liquid_supply(&contact, ALTHEA_DENOM.to_string()).await {
                 Ok(v) => {
                     info!("Successfully updated supply info!");
                     set_supply_info(v);
@@ -198,7 +199,7 @@ async fn compute_liquid_supply(
                     // unvested tokens show up in the balance
                     // but unvested delegated tokens do not, in the case where a user
                     // has some vesting, some delegation, some balance, and some unclaimed rewards
-                    assert!(user.balance > vesting_in_balance);
+                    assert!(user.balance >= vesting_in_balance);
                     total_liquid_supply += user.balance - vesting_in_balance;
                 }
                 // vesting has not started yet, in this case we subtract total vesting amount
@@ -351,9 +352,9 @@ async fn batch_query_user_information(
     denom: String,
 ) -> Result<Vec<UserInfo>, CosmosGrpcError> {
     trace!("Starting batch of {}", input.len());
-    let mut bankrpc = BankQueryClient::connect(GRAVITY_NODE_GRPC).await?;
-    let mut distrpc = DistQueryClient::connect(GRAVITY_NODE_GRPC).await?;
-    let mut stakingrpc = StakingQueryClient::connect(GRAVITY_NODE_GRPC).await?;
+    let mut bankrpc = BankQueryClient::connect(ALTHEA_NODE_GRPC).await?;
+    let mut distrpc = DistQueryClient::connect(ALTHEA_NODE_GRPC).await?;
+    let mut stakingrpc = StakingQueryClient::connect(ALTHEA_NODE_GRPC).await?;
 
     let mut ret = Vec::new();
     for account in input {
@@ -475,8 +476,8 @@ mod tests {
 
     #[actix_web::test]
     async fn test_vesting_query() {
-        let contact = Contact::new(GRAVITY_NODE_GRPC, REQUEST_TIMEOUT, GRAVITY_PREFIX).unwrap();
-        let supply = compute_liquid_supply(&contact, GRAVITY_DENOM.to_string())
+        let contact = Contact::new(ALTHEA_NODE_GRPC, REQUEST_TIMEOUT, ALTHEA_PREFIX).unwrap();
+        let supply = compute_liquid_supply(&contact, ALTHEA_DENOM.to_string())
             .await
             .unwrap();
         info!("Got a liquid supply of {:?}", supply);
