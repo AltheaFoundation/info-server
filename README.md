@@ -16,7 +16,7 @@ The repo auto-deploys the most recent commit in main to https://info.althea.link
 
 ### /total_supply
 
-Provides the total supply of ALTHEA, or any Cosmos chain the server software is pointed at. This is inclusive of the community pool, vesting tokens, staked tokens, and unclaimed rewards. Value return is aalthea and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
+Provides the total supply of ALTHEA, or any Cosmos chain the server software is pointed at. This is inclusive of the community pool, vesting tokens, staked tokens, and unclaimed rewards. Value return is aalthea (ALTHEA wei) and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
 
 - URL: `https://info.althea.link:9000/total_supply`
 - Method: `GET`
@@ -40,7 +40,7 @@ Provides the total supply of ALTHEA, or any Cosmos chain the server software is 
 
 ### /total_liquid_supply
 
-Provides the total liquid supply of ALTHEA, or any Cosmos chain the server software is pointed at. Liquid supply excludes only module tokens and vesting tokens. Staked tokens and unclaimed rewards count in the total. Value return is uALTHEAition and must be divided by `1*10^6` to display whole tokens. This value is updated once a day.
+Provides the total liquid supply of ALTHEA, or any Cosmos chain the server software is pointed at. Liquid supply excludes only module tokens and vesting tokens. Staked tokens and unclaimed rewards count in the total. Value return is aalthea (ALTHEA wei) and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
 
 - URL: `https://info.althea.link:9000/total_liquid_supply`
 - Method: `GET`
@@ -64,7 +64,7 @@ Provides the total liquid supply of ALTHEA, or any Cosmos chain the server softw
 
 ### /supply_info
 
-Provides a breakdown of vesting versus non-vesting tokens for ALTHEAity Bridge, value returned are in uALTHEAition and must be divided by `1*10^6` to display whole tokens. This value is updated once a day.
+Provides a breakdown of vesting versus non-vesting tokens for ALTHEA, value returned are in aalthea (ALTHEA wei) and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
 
 * total_supply: The total supply of tokens in existance.
 * community_pool: The total amount of tokens in the community pool subject to use by governance vote
