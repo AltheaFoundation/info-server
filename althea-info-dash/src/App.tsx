@@ -13,7 +13,7 @@ const UPDATE_TIME = 5000;
 
 const BACKEND_PORT = 9000;
 export const SERVER_URL =
-  "http://" + window.location.hostname + ":" + BACKEND_PORT + "/";
+  "https://" + window.location.hostname + ":" + BACKEND_PORT + "/";
 
 function App() {
   document.title = "Althea L1 Info"
