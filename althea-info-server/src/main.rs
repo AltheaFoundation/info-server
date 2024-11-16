@@ -9,7 +9,7 @@ const SSL: bool = !DEVELOPMENT;
 const DOMAIN: &str = if cfg!(test) || DEVELOPMENT {
     "localhost"
 } else {
-    "info.althea.link"
+    "info.althea.zone"
 };
 /// The backend RPC port for the info server fucntions implemented in this repo
 const INFO_SERVER_PORT: u16 = 9000;

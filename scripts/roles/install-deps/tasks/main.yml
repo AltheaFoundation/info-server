@@ -5,6 +5,7 @@
   apt:
     name: "{{debian_deps}}"
     state: present
+    update_cache: true
   when: ansible_distribution == 'Debian'
   become: true
 
@@ -12,6 +13,7 @@
   apt:
     name: "{{ubuntu_deps}}"
     state: present
+    update_cache: true
   when: ansible_distribution == 'Ubuntu'
   become: true
 
@@ -28,7 +30,6 @@
     state: present
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   become: true
-  ignore_errors: yes
 
 - name: Install Archlinux Deps
   pacman:

@@ -1,5 +1,5 @@
 ---
-- name: Copy Gravity Info site
+- name: Copy Althea Info site
   synchronize:
     src: "{{playbook_dir}}/{{host_dir}}/"
     dest: /usr/share/nginx/{{host_dir}}/
