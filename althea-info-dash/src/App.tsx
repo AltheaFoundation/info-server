@@ -6,8 +6,6 @@ import {
   CardBody,
   CardTitle,
   Card,
-  CardSubtitle,
-  Table,
 } from "reactstrap";
 import { ChainTotalSupplyNumbers } from './types';
 // 5 seconds
@@ -15,7 +13,7 @@ const UPDATE_TIME = 5000;
 
 const BACKEND_PORT = 9000;
 export const SERVER_URL =
-  "https://" + window.location.hostname + ":" + BACKEND_PORT + "/";
+  "http://" + window.location.hostname + ":" + BACKEND_PORT + "/";
 
 function App() {
   document.title = "Althea L1 Info"
@@ -68,7 +66,7 @@ function App() {
         <Card className="ParametersCard" style={{ borderRadius: 8, padding: 25 }}>
           <CardBody>
             <CardTitle tag="h1">
-              Gravity Supply Info
+              Althea L1 Supply Info
             </CardTitle>
             <div style={{ fontSize: 15 }}>Total Supply: {(supplyInfo.total_supply / 10 ** 24).toFixed(2)}M ALTHEA</div>
             <div style={{ fontSize: 15 }}>Community Pool: {(supplyInfo.community_pool / 10 ** 24).toFixed(2)}M ALTHEA</div>
