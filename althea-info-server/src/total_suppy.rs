@@ -4,8 +4,8 @@
 //! to effectively query all the data in a reasonable amount of time and compute the result locally
 //! This code provides a generic way to compute the total liquid supply for a cosmos chain across all vesting types
 
+use crate::{ALTHEA_NODE_GRPC, ALTHEA_PREFIX, REQUEST_TIMEOUT};
 use actix_web::rt::System;
-use core::panic;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::query_client::QueryClient as BankQueryClient;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::QueryBalanceRequest;
 use cosmos_sdk_proto_althea::cosmos::distribution::v1beta1::query_client::QueryClient as DistQueryClient;
@@ -25,8 +25,6 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tonic::transport::channel::Channel;
-
-use crate::{ALTHEA_NODE_GRPC, ALTHEA_PREFIX, REQUEST_TIMEOUT};
 
 // update once a day
 const LOOP_TIME: Duration = Duration::from_secs(86400);
