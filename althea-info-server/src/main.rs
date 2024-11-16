@@ -52,7 +52,7 @@ async fn get_total_liquid_supply() -> impl Responder {
             } else {
                 error!("Invalid supply data, got total liquid supply of {:#?}", v);
                 HttpResponse::InternalServerError()
-                    .json("Invalid supply data, Gravity fullnode is stale")
+                    .json("Invalid supply data, Althea fullnode is stale")
             }
         }
         None => HttpResponse::InternalServerError()
@@ -70,7 +70,7 @@ async fn get_all_supply_info() -> impl Responder {
             } else {
                 error!("Invalid supply data, got total liquid supply of {:#?}", v);
                 HttpResponse::InternalServerError()
-                    .json("Invalid supply data, Gravity fullnode is stale")
+                    .json("Invalid supply data, Althea fullnode is stale")
             }
         }
         None => HttpResponse::InternalServerError()
@@ -95,6 +95,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(get_total_supply)
             .service(get_total_liquid_supply)
+            .service(get_all_supply_info)
     });
 
     let info_server = if SSL {
