@@ -5,6 +5,7 @@
 //! This code provides a generic way to compute the total liquid supply for a cosmos chain across all vesting types
 
 use actix_web::rt::System;
+use core::panic;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::query_client::QueryClient as BankQueryClient;
 use cosmos_sdk_proto_althea::cosmos::bank::v1beta1::QueryBalanceRequest;
 use cosmos_sdk_proto_althea::cosmos::distribution::v1beta1::query_client::QueryClient as DistQueryClient;
@@ -145,7 +146,6 @@ async fn compute_liquid_supply(
     let mut total_vesting_staked: Uint256 = 0u8.into();
 
     for user in users {
-        //let address = user.account.get_base_account().address;
         match user.account {
             // account with no vesting, simple case, all is liquid
             AccountType::ProtoBaseAccount(_) => {
@@ -156,6 +156,24 @@ async fn compute_liquid_supply(
                 total_liquid_supply += user.balance;
                 total_liquid_supply += user.unclaimed_rewards;
                 total_liquid_supply += user.total_staked;
+            }
+            // In ethermint chains ethermint accounts are module accounts
+            AccountType::ModuleAccount(ma) => {
+                // here we must skip accounts representing mdoule like minting or governance
+                // these accounts are not liquid, but we must include ethermint accounts.
+                // the ethermint account will have a 0x address as it's name and a pubkey that is
+                // an actual value
+                if ma.name.starts_with("0x") && ma.base_account.unwrap().pub_key.is_some() {
+                    total_liquid_balances += user.balance;
+                    total_nonvesting_staked += user.total_staked;
+                    total_unclaimed_rewards += user.unclaimed_rewards;
+
+                    total_liquid_supply += user.balance;
+                    total_liquid_supply += user.unclaimed_rewards;
+                    total_liquid_supply += user.total_staked;
+                } else {
+                    // this is not an evm account
+                }
             }
             // account with periodic vesting, now we need to determine how much has vested then compare
             // that to their account balance
@@ -291,8 +309,6 @@ async fn compute_liquid_supply(
                 }
             }
             AccountType::DelayedVestingAccount(_) => todo!(),
-            // module accounts are not liquid supply
-            AccountType::ModuleAccount(_) => {}
             // it's locked, not liquid
             AccountType::PermenantLockedAccount(_) => {}
         }
@@ -463,6 +479,7 @@ fn sum_vesting(input: BaseVestingAccount, denom: String) -> (Uint256, Uint256, U
     (total_free, total_vesting, original_amount)
 }
 
+#[derive(Debug, Clone)]
 struct UserInfo {
     account: AccountType,
     balance: Uint256,
@@ -473,7 +490,9 @@ struct UserInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cmp::{max, min};
 
+    /// Test the vesting query and ensure a sane result, if the total supply is off by more than 1% we have a problem
     #[actix_web::test]
     async fn test_vesting_query() {
         let contact = Contact::new(ALTHEA_NODE_GRPC, REQUEST_TIMEOUT, ALTHEA_PREFIX).unwrap();
@@ -481,5 +500,11 @@ mod tests {
             .await
             .unwrap();
         info!("Got a liquid supply of {:?}", supply);
+        let total = supply.community_pool + supply.total_liquid_supply + supply.total_vesting;
+        let one_hundreth_of_total = supply.total_supply / 100u8.into();
+        let bigger = max(total, supply.total_supply);
+        let smaller = min(total, supply.total_supply);
+        let diff = bigger - smaller;
+        assert!(diff < one_hundreth_of_total);
     }
 }
