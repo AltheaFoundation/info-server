@@ -1,6 +1,6 @@
 # Althea L1 Info Dashboard
 
-This repo contains frontend and backend code for deploying a Althea L1 information server, this server queries public full nodes and processes data about the chain in order to present the page https://info.althea.link in addition to this page public API endpoints are provided
+This repo contains frontend and backend code for deploying a Althea L1 information server, this server queries public full nodes and processes data about the chain in order to present the page https://info.althea.zone in addition to this page public API endpoints are provided
 
 This server computes and displays info that would be otherwise difficult to access or compute. Such as token supply metrics
 
@@ -10,7 +10,7 @@ EVM transaction fee volume
 
 Issues and pull requests for new endpoints or information formats are welcome.
 
-The repo auto-deploys the most recent commit in main to https://info.althea.link
+The repo auto-deploys the most recent commit in main to https://info.althea.zone
 
 ## API Docs
 
@@ -18,7 +18,7 @@ The repo auto-deploys the most recent commit in main to https://info.althea.link
 
 Provides the total supply of ALTHEA, or any Cosmos chain the server software is pointed at. This is inclusive of the community pool, vesting tokens, staked tokens, and unclaimed rewards. Value return is aalthea (ALTHEA wei) and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
 
-- URL: `https://info.althea.link:9000/total_supply`
+- URL: `https://info.althea.zone:9000/total_supply`
 - Method: `GET`
 - URL Params: `None`
 - Data Params: `None`
@@ -34,7 +34,7 @@ Provides the total supply of ALTHEA, or any Cosmos chain the server software is 
 
 - Sample Call:
 
-`curl https://info.althea.link:9000/total_supply`
+`curl https://info.althea.zone:9000/total_supply`
 
 ---
 
@@ -42,7 +42,7 @@ Provides the total supply of ALTHEA, or any Cosmos chain the server software is 
 
 Provides the total liquid supply of ALTHEA, or any Cosmos chain the server software is pointed at. Liquid supply excludes only module tokens and vesting tokens. Staked tokens and unclaimed rewards count in the total. Value return is aalthea (ALTHEA wei) and must be divided by `1*10^18` to display whole tokens. This value is updated once a day.
 
-- URL: `https://info.althea.link:9000/total_liquid_supply`
+- URL: `https://info.althea.zone:9000/total_liquid_supply`
 - Method: `GET`
 - URL Params: `None`
 - Data Params: `None`
@@ -58,7 +58,7 @@ Provides the total liquid supply of ALTHEA, or any Cosmos chain the server softw
 
 - Sample Call:
 
-`curl https://info.althea.link:9000/total_liquid_supply`
+`curl https://info.althea.zone:9000/total_liquid_supply`
 
 ---
 
@@ -75,7 +75,7 @@ Provides a breakdown of vesting versus non-vesting tokens for ALTHEA, value retu
 * total_vesting_staked: All tokens that are vesting and also staked
 * total_vested: The amount of tokens that where once vesting but are now liquid
 
-- URL: `https://info.althea.link:9000/supply_info`
+- URL: `https://info.althea.zone:9000/supply_info`
 - Method: `GET`
 - URL Params: `None`
 - Data Params: `None`
@@ -103,6 +103,6 @@ Provides a breakdown of vesting versus non-vesting tokens for ALTHEA, value retu
 
 - Sample Call:
 
-`curl https://info.althea.link:9000/supply_info`
+`curl https://info.althea.zone:9000/supply_info`
 
 ---
