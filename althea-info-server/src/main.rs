@@ -99,8 +99,8 @@ async fn main() -> std::io::Result<()> {
     });
 
     let info_server = if SSL {
-        let cert_chain = load_certs(&format!("/etc/letsencrypt/live/{}/fullchain.pem", DOMAIN));
-        let keys = load_private_key(&format!("/etc/letsencrypt/live/{}/privkey.pem", DOMAIN));
+        let cert_chain = load_certs(&format!("/etc/letsencrypt/live/{DOMAIN}/fullchain.pem"));
+        let keys = load_private_key(&format!("/etc/letsencrypt/live/{DOMAIN}/privkey.pem"));
         let config = ServerConfig::builder()
             .with_safe_defaults()
             .with_no_client_auth()
@@ -109,9 +109,9 @@ async fn main() -> std::io::Result<()> {
 
         info!("Binding to SSL");
 
-        info_server.bind_rustls(format!("{}:{}", DOMAIN, INFO_SERVER_PORT), config.clone())?
+        info_server.bind_rustls(format!("{DOMAIN}:{INFO_SERVER_PORT}"), config.clone())?
     } else {
-        info_server.bind(format!("{}:{}", DOMAIN, INFO_SERVER_PORT))?
+        info_server.bind(format!("{DOMAIN}:{INFO_SERVER_PORT}"))?
     };
 
     info_server.run().await?;

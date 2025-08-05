@@ -533,7 +533,7 @@ mod tests {
         let smaller = min(total, supply.total_supply);
         println!("Got a total supply of {:?} and total supply of {:?} with {} liquid {} community and {} vesting", total, supply.total_supply, supply.total_liquid_supply, supply.community_pool, supply.total_vesting);
         let diff = bigger - smaller;
-        println!("Difference is {:?}", diff);
+        println!("Difference is {diff:?}");
         assert!(diff < one_hundreth_of_total);
     }
 }
