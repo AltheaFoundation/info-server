@@ -157,11 +157,22 @@ async fn compute_liquid_supply(
             }
             // In ethermint chains ethermint accounts are module accounts
             AccountType::ModuleAccount(ma) => {
-                // here we must skip accounts representing mdoule like minting or governance
+                // here we must skip accounts representing module like minting or governance
                 // these accounts are not liquid, but we must include ethermint accounts.
                 // the ethermint account will have a 0x address as it's name and a pubkey that is
                 // an actual value
-                if ma.name.starts_with("0x") && ma.base_account.unwrap().pub_key.is_some() {
+                if ma.name.starts_with("0x") && ma.base_account.clone().unwrap().pub_key.is_some() {
+                    total_liquid_balances += user.balance;
+                    total_nonvesting_staked += user.total_staked;
+                    total_unclaimed_rewards += user.unclaimed_rewards;
+
+                    total_liquid_supply += user.balance;
+                    total_liquid_supply += user.unclaimed_rewards;
+                    total_liquid_supply += user.total_staked;
+                // this is a group module multisig account, these we can count
+                } else if ma.name.starts_with("althea1")
+                    && ma.base_account.clone().unwrap().pub_key.is_none()
+                {
                     total_liquid_balances += user.balance;
                     total_nonvesting_staked += user.total_staked;
                     total_unclaimed_rewards += user.unclaimed_rewards;
@@ -186,7 +197,6 @@ async fn compute_liquid_supply(
                 // obvious stuff requiring no computation
                 total_liquid_supply += user.unclaimed_rewards;
                 total_liquid_supply += total_delegated_free;
-                total_nonvesting_staked += total_delegated_free;
 
                 // vesting has started
                 if vesting_start_time < SystemTime::now() {
@@ -209,6 +219,7 @@ async fn compute_liquid_supply(
                     let total_amount_still_vesting = original_vesting_amount - total_amount_vested;
 
                     total_vested += total_amount_vested;
+                    total_liquid_supply += total_amount_vested;
                     total_vesting += total_amount_still_vesting;
 
                     // this is a hard edegcase to handle in the current implementation. If someone has delegated and not touched their delegation for a long time
@@ -223,9 +234,11 @@ async fn compute_liquid_supply(
                         let delegated_vesting = total_amount_vested - org_vest_bal;
                         // updated total vesting staked with computed amount
                         total_vesting_staked += delegated_vesting;
+                        total_nonvesting_staked += total_delegated_vesting - delegated_vesting;
                         total_amount_vested - delegated_vesting
                     } else {
                         total_vesting_staked += total_delegated_vesting;
+                        total_nonvesting_staked += total_delegated_free;
                         total_amount_still_vesting - total_delegated_vesting
                     };
                     // unvested tokens show up in the balance
@@ -506,19 +519,21 @@ mod tests {
     use super::*;
     use std::cmp::{max, min};
 
-    /// Test the vesting query and ensure a sane result, if the total supply is off by more than 1% we have a problem
+    /// Test the vesting query and ensure a sane result, if the total supply is off by more than 1% we have a problem, in general these don't add up
+    /// exactly becuase things are updated at different times and in slightly different ways. But they shoudl always be close
     #[actix_web::test]
     async fn test_vesting_query() {
         let contact = Contact::new(ALTHEA_NODE_GRPC, REQUEST_TIMEOUT, ALTHEA_PREFIX).unwrap();
         let supply = compute_liquid_supply(&contact, ALTHEA_DENOM.to_string())
             .await
             .unwrap();
-        info!("Got a liquid supply of {:?}", supply);
         let total = supply.community_pool + supply.total_liquid_supply + supply.total_vesting;
         let one_hundreth_of_total = supply.total_supply / 100u8.into();
         let bigger = max(total, supply.total_supply);
         let smaller = min(total, supply.total_supply);
+        println!("Got a total supply of {:?} and total supply of {:?} with {} liquid {} community and {} vesting", total, supply.total_supply, supply.total_liquid_supply, supply.community_pool, supply.total_vesting);
         let diff = bigger - smaller;
+        println!("Difference is {:?}", diff);
         assert!(diff < one_hundreth_of_total);
     }
 }
