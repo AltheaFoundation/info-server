@@ -179,6 +179,8 @@ async fn compute_liquid_supply(
                 let vesting_start_time =
                     UNIX_EPOCH + Duration::from_secs(account_info.start_time as u64);
                 let base = account_info.base_vesting_account.unwrap();
+                // delegated vesting may be more than the remaining vesting amount if the user hasn't updated thier delegation
+                // since the last vesting event
                 let (total_delegated_free, total_delegated_vesting, original_vesting_amount) =
                     sum_vesting(base, denom.clone());
                 // obvious stuff requiring no computation
@@ -210,8 +212,19 @@ async fn compute_liquid_supply(
                     total_vested += total_amount_vested;
                     total_vesting += total_amount_still_vesting;
 
-                    assert!(total_amount_still_vesting >= total_delegated_vesting);
-                    let vesting_in_balance = total_amount_still_vesting - total_delegated_vesting;
+                    // this is a hard edegcase to handle in the current implementation. If someone has delegated and not touched their delegation for a long time
+                    // vesting events have elapsed but their delegated vesting number has not been updated. In this case we can be confident that the total_delegated_vesting
+                    // is the original amount they have delegated out of their vesting total. So what has vested since then can't be in their balance since that would require them
+                    // to interact with thier account and update the total_delegated_vesting number. 
+                    let vesting_in_balance = if total_delegated_vesting > total_amount_still_vesting {
+                        // vested tokens show up in the balance first, so we take what they originally left in their balance
+                        // subtract it from what's vested so far and that's what's delegated and still vesting in this case
+                        let org_vest_bal = original_vesting_amount - total_delegated_vesting;
+                        let delegated_vesting = total_amount_vested - org_vest_bal;
+                        total_amount_vested - delegated_vesting
+                    } else {
+                        total_amount_still_vesting - total_delegated_vesting
+                    };
                     // unvested tokens show up in the balance
                     // but unvested delegated tokens do not, in the case where a user
                     // has some vesting, some delegation, some balance, and some unclaimed rewards
