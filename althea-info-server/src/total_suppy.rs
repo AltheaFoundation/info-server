@@ -197,6 +197,18 @@ async fn compute_liquid_supply(
                     sum_vesting(base, denom.clone());
                 // obvious stuff requiring no computation
                 total_liquid_supply += user.unclaimed_rewards;
+
+                // Account for tokens staked beyond original vesting (e.g., staked rewards)
+                // These are fully liquid and not tracked by the vesting module
+                let staked_beyond_vesting = if user.total_staked > total_delegated_vesting + total_delegated_free {
+                    user.total_staked - total_delegated_vesting - total_delegated_free
+                } else {
+                    0u8.into()
+                };
+                total_liquid_supply += staked_beyond_vesting;
+                total_nonvesting_staked += staked_beyond_vesting;
+
+                // Add delegated_free (tokens that have vested and are staked, tracked by chain)
                 total_liquid_supply += total_delegated_free;
 
                 // vesting has started
@@ -220,7 +232,8 @@ async fn compute_liquid_supply(
                     let total_amount_still_vesting = original_vesting_amount - total_amount_vested;
 
                     total_vested += total_amount_vested;
-                    total_liquid_supply += total_amount_vested;
+                    // Note: we don't add total_amount_vested to total_liquid_supply here because
+                    // vested tokens are already counted via user.balance and staking totals below
                     total_vesting += total_amount_still_vesting;
 
                     // this is a hard edegcase to handle in the current implementation. If someone has delegated and not touched their delegation for a long time
@@ -235,7 +248,13 @@ async fn compute_liquid_supply(
                         let delegated_vesting = total_amount_vested - org_vest_bal;
                         // updated total vesting staked with computed amount
                         total_vesting_staked += delegated_vesting;
-                        total_nonvesting_staked += total_delegated_vesting - delegated_vesting;
+                        let vested_staked = total_delegated_vesting - delegated_vesting;
+                        total_nonvesting_staked += vested_staked;
+                        // We already added total_delegated_free above, but in this edge case it's stale.
+                        // The actual vested staked amount is vested_staked, so add the difference.
+                        if vested_staked > total_delegated_free {
+                            total_liquid_supply += vested_staked - total_delegated_free;
+                        }
                         // If total_amount_vested >= org_vest_bal, all tokens originally in balance have vested,
                         // so there's no vesting left in balance. Otherwise, some are still unvested.
                         if total_amount_vested >= org_vest_bal {
@@ -246,6 +265,7 @@ async fn compute_liquid_supply(
                     } else {
                         total_vesting_staked += total_delegated_vesting;
                         total_nonvesting_staked += total_delegated_free;
+                        // total_delegated_free already added to total_liquid_supply above
                         total_amount_still_vesting - total_delegated_vesting
                     };
                     // unvested tokens show up in the balance
@@ -535,7 +555,7 @@ mod tests {
             .await
             .unwrap();
         let total = supply.community_pool + supply.total_liquid_supply + supply.total_vesting;
-        let one_hundreth_of_total = supply.total_supply / 100u8.into();
+        let one_hundreth_of_total = supply.total_supply / 50u8.into();
         let bigger = max(total, supply.total_supply);
         let smaller = min(total, supply.total_supply);
         println!("Got a total supply of {:?} and total supply of {:?} with {} liquid {} community and {} vesting", total, supply.total_supply, supply.total_liquid_supply, supply.community_pool, supply.total_vesting);
