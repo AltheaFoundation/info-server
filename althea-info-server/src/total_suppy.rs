@@ -144,6 +144,7 @@ async fn compute_liquid_supply(
     let mut total_vesting_staked: Uint256 = 0u8.into();
 
     for user in users {
+        //let user_address = user.account.get_base_account().address.clone();
         match user.account {
             // account with no vesting, simple case, all is liquid
             AccountType::ProtoBaseAccount(_) => {
@@ -225,7 +226,7 @@ async fn compute_liquid_supply(
                     // this is a hard edegcase to handle in the current implementation. If someone has delegated and not touched their delegation for a long time
                     // vesting events have elapsed but their delegated vesting number has not been updated. In this case we can be confident that the total_delegated_vesting
                     // is the original amount they have delegated out of their vesting total. So what has vested since then can't be in their balance since that would require them
-                    // to interact with thier account and update the total_delegated_vesting number.
+                    // to interact with their account and update the total_delegated_vesting number.
                     let vesting_in_balance = if total_delegated_vesting > total_amount_still_vesting
                     {
                         // vested tokens show up in the balance first, so we take what they originally left in their balance
@@ -235,7 +236,13 @@ async fn compute_liquid_supply(
                         // updated total vesting staked with computed amount
                         total_vesting_staked += delegated_vesting;
                         total_nonvesting_staked += total_delegated_vesting - delegated_vesting;
-                        total_amount_vested - delegated_vesting
+                        // If total_amount_vested >= org_vest_bal, all tokens originally in balance have vested,
+                        // so there's no vesting left in balance. Otherwise, some are still unvested.
+                        if total_amount_vested >= org_vest_bal {
+                            0u8.into()
+                        } else {
+                            org_vest_bal - total_amount_vested
+                        }
                     } else {
                         total_vesting_staked += total_delegated_vesting;
                         total_nonvesting_staked += total_delegated_free;
