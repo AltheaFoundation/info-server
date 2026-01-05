@@ -1,12 +1,16 @@
+# /etc/nginx/conf.d/info-dash.conf
+
+# HTTP: serve over http, we expect certbot to replace this with a https version
 server {
-	server_name {{domain}};
-	root /usr/share/nginx/{{host_dir}};
+    listen 80;
+    listen [::]:80;
 
-	index index.html index.htm index.nginx-debian.html;
+    server_name info.althea.link info.althea.zone;
 
-	location / {
-		# First attempt to serve request as file, then
-		# as directory, then fall back to displaying a 404.
-		try_files $uri $uri/ =404;
-	}
+    root /usr/share/nginx/althea-info-dash;
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
 }

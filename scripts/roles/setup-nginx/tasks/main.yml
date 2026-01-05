@@ -19,11 +19,11 @@
   ansible.builtin.cron:
     name: certbot-renew
     minute: 0
-    hour: 0,12
+    hour: 0
+    day: '1,15'
     user: root
-    job: >
-      python3 -c ''import random; import time; time.sleep(random.random() * 3600)''
-      /usr/local/bin/certbot renew -q | sudo tee -a /etc/crontab > /dev/null
+    job: service nginx stop && /usr/local/bin/certbot renew -q && service nginx start && service althea-info-server restart
+
 
 - name: Set Nginx to run on startup
   systemd:

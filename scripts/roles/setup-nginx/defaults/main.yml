@@ -1,2 +1,3 @@
-domain: "info.althea.zone"
+domain: "info.althea.zone,info.althea.link"
+main_domain: "info.althea.link"
 host_dir: "althea-info-dash"
