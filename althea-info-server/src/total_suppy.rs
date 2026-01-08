@@ -32,9 +32,9 @@ pub const ALTHEA_DENOM: &str = "aalthea";
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ChainTotalSupplyNumbers {
-    /// The total amount of Graviton tokens currently in existance including those vesting and in the community pool
+    /// The total amount of Althea tokens currently in existance including those vesting and in the community pool
     pub total_supply: Uint256,
-    /// The total amount of Gravition in the community pool
+    /// The total amount of Althea in the community pool
     pub community_pool: Uint256,
     /// All tokens that are 'liquid' meaning in a balance, claimable now as rewards
     /// or staked and eligeable to withdraw and spend, essentially just exludes vesting

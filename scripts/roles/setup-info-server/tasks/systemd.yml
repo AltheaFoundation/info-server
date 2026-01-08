@@ -21,13 +21,13 @@
   command: systemctl status althea-info-server
   ignore_errors: true
   changed_when: false
-  register: service_gravity_info_server_status
+  register: service_althea_info_server_status
 
 - name: Report status of Althea info server
   fail:
     msg: |
       Service althea-info-server is not running.
       Output of `systemctl status althea-info-server`:
-      {{ service_gravity_info_server_status.stdout }}
-      {{ service_gravity_info_server_status.stderr }}
-  when: service_gravity_info_server_status is failed
+      {{ service_althea_info_server_status.stdout }}
+      {{ service_althea_info_server_status.stderr }}
+  when: service_althea_info_server_status is failed

@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-and-deploy:
-    name: Build and deploy Gravity Info Server
+    name: Build and deploy Althea Info Server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
