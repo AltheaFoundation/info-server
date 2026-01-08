@@ -26,12 +26,12 @@ pub struct Token {
 }
 
 pub fn get_token(token: &str) -> Option<Token> {
-    let pools = get_tokens();
-    pools
+    let tokens = get_tokens();
+    tokens
         .values()
         .find(|t| {
             t.althea_evm_address.to_string() == token
-                || { t.althea_denom == token }
+                || t.althea_denom == token
                 || {
                     if let Some(eth_address) = &t.eth_address {
                         eth_address.to_string() == token

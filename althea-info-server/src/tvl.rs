@@ -47,33 +47,21 @@ pub async fn get_unpriced_tvl(grpc: String) -> Result<Tvl, String> {
         amount: althea_supply,
     };
 
-    let ibc_tokens_on_chain: Vec<TokenAmount> = tokens_on_chain
-        .clone()
-        .into_iter()
-        .filter_map(|(t, v)| {
-            if t.althea_denom.starts_with("ibc/") {
-                return Some(TokenAmount {
-                    token: t,
-                    amount: v,
-                });
-            }
-            None
-        })
-        .collect();
-
-    let althea_native_erc20s_on_chain: Vec<TokenAmount> = tokens_on_chain
-        .clone()
-        .into_iter()
-        .filter_map(|(t, v)| {
-            if !t.althea_denom.starts_with("ibc/") && t.althea_denom != ALTHEA_TOKEN_DENOM {
-                return Some(TokenAmount {
-                    token: t,
-                    amount: v,
-                });
-            }
-            None
-        })
-        .collect();
+    let mut ibc_tokens_on_chain: Vec<TokenAmount> = Vec::new();
+    let mut althea_native_erc20s_on_chain: Vec<TokenAmount> = Vec::new();
+    for (t, v) in tokens_on_chain {
+        if t.althea_denom.starts_with("ibc/") {
+            ibc_tokens_on_chain.push(TokenAmount {
+                token: t,
+                amount: v,
+            });
+        } else if t.althea_denom != ALTHEA_TOKEN_DENOM {
+            althea_native_erc20s_on_chain.push(TokenAmount {
+                token: t,
+                amount: v,
+            });
+        }
+    }
     let tvl = Tvl {
         althea_on_chain,
         ibc_tokens_on_chain,
@@ -167,44 +155,6 @@ pub async fn get_total_supply(grpc: &str) -> Result<TotalSupply, String> {
     Ok(all_supply)
 }
 
-pub fn get_ibc_tokens_bridged_in(supply: &TotalSupply) -> HashMap<Token, Uint256> {
-    let mut result = HashMap::new();
-
-    for (_token_name, token) in get_tokens() {
-        if token.althea_denom.starts_with("ibc/") {
-            result.insert(token.clone(), Uint256::zero());
-        }
-    }
-
-    // Filter for IBC tokens (denoms starting with "ibc/")
-    for coin in supply {
-        if coin.denom.starts_with("ibc/") {
-            // Find the token in our result map that matches this denom
-            for (token, amount) in result.iter_mut() {
-                if token.althea_denom == coin.denom {
-                    // Parse the coin amount and add it to the existing value
-                    match coin.amount.parse::<Uint256>() {
-                        Ok(parsed_amount) => {
-                            *amount += parsed_amount;
-                        }
-                        Err(e) => {
-                            log::error!(
-                                "Failed to parse amount '{}' for denom {}: {}",
-                                coin.amount,
-                                coin.denom,
-                                e
-                            );
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    result
-}
-
 pub async fn get_tokens_on_chain(
     supply: &TotalSupply,
     grpc: &str,
@@ -262,7 +212,6 @@ pub async fn get_tokens_on_chain(
 
             // Get the escrow address for this token
             // Standard IBC transfer port is "transfer", channel needs to come from token config
-            // TODO: Get channel_id from token configuration
             let port_id = "transfer".to_string();
             let channel_id = if let Some(ref channel) = token.ibc_channel {
                 channel.clone()

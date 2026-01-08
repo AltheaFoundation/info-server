@@ -54,7 +54,7 @@ async fn endpoint_get_all_supply_info() -> impl Responder {
 
 #[get("/unpriced_tvl")]
 async fn endpoint_get_unpriced_tvl() -> impl Responder {
-    // if we have already computed supply info return it, if not return an error
+    // Try to get the TVL, on failure return an error
     match get_unpriced_tvl(ALTHEA_NODE_GRPC.to_string()).await {
         Ok(v) => HttpResponse::Ok().json(v),
         Err(e) => {
