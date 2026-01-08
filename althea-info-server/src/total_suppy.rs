@@ -200,11 +200,12 @@ async fn compute_liquid_supply(
 
                 // Account for tokens staked beyond original vesting (e.g., staked rewards)
                 // These are fully liquid and not tracked by the vesting module
-                let staked_beyond_vesting = if user.total_staked > total_delegated_vesting + total_delegated_free {
-                    user.total_staked - total_delegated_vesting - total_delegated_free
-                } else {
-                    0u8.into()
-                };
+                let staked_beyond_vesting =
+                    if user.total_staked > total_delegated_vesting + total_delegated_free {
+                        user.total_staked - total_delegated_vesting - total_delegated_free
+                    } else {
+                        0u8.into()
+                    };
                 total_liquid_supply += staked_beyond_vesting;
                 total_nonvesting_staked += staked_beyond_vesting;
 
